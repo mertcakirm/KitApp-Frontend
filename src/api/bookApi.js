@@ -28,12 +28,20 @@ export const BookApi = {
   },
 
   getAll: async (page = 1, limit = 10, search = "") => {
+    const requestParams = { page, limit };
+
+    if (search && search.trim() !== "") {
+      requestParams.search = search;
+    }
+
     const response = await api.get('/books/all', {
-        skipAuth:true,
-        params: { page, limit, search }
+        skipAuth: true,
+        params: requestParams
     });
-    return response.data;
+    
+    return response.data.data;
   },
+
 
   /* { title, description, coverImage } */
   update: async (bookId, bookData) => {
