@@ -63,10 +63,19 @@ export const BookApi = {
     return response.data;
   },
 
-  getByWriter: async (userId) => {
-    const response = await api.get(`/books/writer/${userId}`,{skipAuth:true});
+  getByWriter: async (userId, page = 1, limit = 10, search = '') => {
+    const query = new URLSearchParams({ page, limit });
+
+    if (search && search.trim() !== '') {
+      query.append('search', search.trim());
+    }
+
+    const response = await api.get(`/books/writer/${userId}?${query.toString()}`, {
+      skipAuth: true
+    });
     return response.data;
   },
+
 
   delete: async (bookId) => {
     const response = await api.delete(`/books/delete/${bookId}`);

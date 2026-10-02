@@ -5,14 +5,12 @@ import Icon from '../common/Icon';
 
 const API_BASE_URL = 'http://localhost:5000';
 
-// Arka plan karartma (Backdrop) varyantı
 const backdropVariants = {
   hidden: { opacity: 0 },
   visible: { opacity: 1, transition: { duration: 0.25 } },
   exit: { opacity: 0, transition: { duration: 0.2, delay: 0.05 } },
 };
 
-// Modal ana pencere varyantı (Yaylanma fiziği + Alt elemanları sırayla tetikleme)
 const modalVariants = {
   hidden: { opacity: 0, scale: 0.9, y: 28 },
   visible: {
@@ -35,7 +33,6 @@ const modalVariants = {
   },
 };
 
-// Modal içindeki bölümlerin sıralı giriş varyantı
 const sectionVariants = {
   hidden: { opacity: 0, y: 14 },
   visible: {
@@ -45,7 +42,6 @@ const sectionVariants = {
   },
 };
 
-// Kategori etiketleri için yaylanma varyantı
 const tagVariants = {
   hidden: { opacity: 0, scale: 0.8 },
   visible: {
@@ -90,16 +86,13 @@ const BookDetailModal = ({ book, onClose, onDownload }) => {
           exit="exit"
           className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/45 backdrop-blur-xs"
         >
-          {/* Arka Plana Tıklayınca Kapatma Alanı */}
           <div className="absolute inset-0" onClick={onClose} />
 
-          {/* Pop-up Kartı */}
           <motion.div
             variants={modalVariants}
             onClick={(e) => e.stopPropagation()}
             className="relative bg-[#FFFDFB] border-2 border-[#EADFCF] rounded-3xl shadow-2xl max-w-lg w-full overflow-hidden z-10 flex flex-col max-h-[90vh]"
           >
-            {/* Kapatma (X) Butonu */}
             <motion.button
               type="button"
               whileHover={{ scale: 1.12, rotate: 90 }}

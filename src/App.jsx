@@ -8,7 +8,8 @@ import Writers from './pages/Writers';
 import AdminPanel from './pages/AdminPanel';
 import WriterPanel from './pages/WriterPanel';
 import WriterDetail from './pages/WriterDetail';
-import { getCookie } from './utils/cookie'; // Cookie kontrolü için
+import { getCookie } from './utils/cookie';
+import UserProfile from './pages/UserProfile';
 
 const PublicRoute = ({ children }) => {
   const token = getCookie('token');
@@ -23,6 +24,7 @@ function App() {
         <Routes>
           <Route path="/" element={<Home />} />
           <Route path="/authors" element={<Writers />} />
+          <Route path="/profile" element={<UserProfile />} />
           <Route path="/about" element={<About />} />
           <Route path="/admin-panel" element={<AdminPanel />} />
           <Route path="/author-panel" element={<WriterPanel />} />

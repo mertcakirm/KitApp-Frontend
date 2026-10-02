@@ -1,16 +1,17 @@
-import React, { useState, useEffect, useCallback, useRef } from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import Icon from '../components/common/Icon';
-import PageHeader from '../components/Home/PageHeader';
-import SearchBar from '../components/Home/SearchBar';
-import BookCard from '../components/Home/BookCard';
-import BookDetailModal from '../components/Home/BookDetailModal';
+import PageHeader from '../components/home/PageHeader';
+import SearchBar from '../components/common/SearchBar';
+import BookCard from '../components/home/BookCard';
+import BookDetailModal from '../components/home/BookDetailModal';
 import { BookApi } from '../api/bookApi';
 import Loading from '../components/common/Loading';
 import NotFound from '../components/common/NotFound';
 
 const API_BASE_URL = 'http://localhost:5000';
 const PAGE_LIMIT = 12;
+const POPULAR_CATEGORIES = ['Dünya Klasikleri', 'Tarih', 'Bilim Kurgu', 'Edebiyat'];
 
 const Home = () => {
   const [search, setSearch] = useState("");
@@ -25,7 +26,7 @@ const Home = () => {
     currentPage: 1
   });
 
-  const observerTarget = useRef(null);
+  const [observerTarget, setObserverTarget] = useState(null);
 
   const fetchBooks = useCallback(async (page = 1, searchQuery = "", isAppend = false) => {
     if (isAppend) {
@@ -43,15 +44,20 @@ const Home = () => {
 
         setBooks((prevBooks) => {
           if (!isAppend) return fetchedBooks;
-          const existingIds = new Set(prevBooks.map((b) => b.id));
-          const uniqueNewBooks = fetchedBooks.filter((b) => !existingIds.has(b.id));
+          const existingIds = new Set(prevBooks.map((b) => b.id || b._id));
+          const uniqueNewBooks = fetchedBooks.filter((b) => !existingIds.has(b.id || b._id));
           return [...prevBooks, ...uniqueNewBooks];
         });
 
+        const totalItems = Number(data.totalItems ?? data.total ?? 0);
+        const calculatedTotalPages = Math.ceil(totalItems / PAGE_LIMIT) || 1;
+        const totalPages = Number(data.totalPages ?? calculatedTotalPages);
+        const currentPage = Number(data.currentPage ?? page);
+
         setPagination({
-          totalItems: data.totalItems || 0,
-          totalPages: data.totalPages || 1,
-          currentPage: data.currentPage || page
+          totalItems,
+          totalPages,
+          currentPage
         });
       }
     } catch (err) {
@@ -70,31 +76,31 @@ const Home = () => {
   }, [search, fetchBooks]);
 
   useEffect(() => {
-    const currentTarget = observerTarget.current;
-    if (!currentTarget) return;
+    if (!observerTarget) return;
+
+    const hasMore = pagination.currentPage < pagination.totalPages;
+    if (!hasMore || loading || loadingMore || error) return;
 
     const observer = new IntersectionObserver(
       (entries) => {
         const [entry] = entries;
-        const hasMore = pagination.currentPage < pagination.totalPages;
-
-        if (entry.isIntersecting && hasMore && !loading && !loadingMore && !error) {
+        if (entry.isIntersecting) {
           fetchBooks(pagination.currentPage + 1, search, true);
         }
       },
       {
         root: null,
-        rootMargin: '150px',
-        threshold: 0.1,
+        rootMargin: '200px',
+        threshold: 0,
       }
     );
 
-    observer.observe(currentTarget);
+    observer.observe(observerTarget);
 
     return () => {
-      if (currentTarget) observer.unobserve(currentTarget);
+      observer.disconnect();
     };
-  }, [pagination.currentPage, pagination.totalPages, loading, loadingMore, error, search, fetchBooks]);
+  }, [observerTarget, pagination.currentPage, pagination.totalPages, loading, loadingMore, error, search, fetchBooks]);
 
   const handleDownload = (book) => {
     if (!book.filePath) {
@@ -127,7 +133,15 @@ const Home = () => {
       <SearchBar 
         value={search} 
         onChange={setSearch} 
-        onPopularClick={setSearch} 
+        onSuggestionClick={setSearch}
+        placeholder="Kitap adı, yazar veya kategori ara..."
+        debounceTime={2000}
+        size="lg"
+        showSuggestions={true}
+        showProgressBar={true}
+        suggestionsLabel="Popüler Kategoriler:"
+        suggestionsIcon="sparkles"
+        suggestions={POPULAR_CATEGORIES}
       />
 
       <div className="w-full max-w-6xl pb-12">
@@ -170,7 +184,7 @@ const Home = () => {
                   <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-4 md:gap-6">
                     {books.map((book, index) => (
                       <BookCard 
-                        key={book.id} 
+                        key={book.id || book._id} 
                         index={index % PAGE_LIMIT}
                         book={book} 
                         onDownload={handleDownload} 
@@ -180,7 +194,10 @@ const Home = () => {
                   </div>
 
                   {/* SCROLL TETİKLEYİCİ VE ALT YÜKLENİYOR GÖSTERGESİ */}
-                  <div ref={observerTarget} className="w-full py-6 flex flex-col items-center justify-center">
+                  <div 
+                    ref={setObserverTarget} 
+                    className="w-full min-h-[40px] py-6 flex flex-col items-center justify-center"
+                  >
                     <AnimatePresence mode="wait">
                       {loadingMore && (
                         <motion.div
