@@ -2,8 +2,7 @@
 import React, { useEffect, useState } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import Icon from '../common/Icon';
-
-const API_BASE_URL = 'http://localhost:5000';
+import { FILEBASE_URL } from '../../api/api';
 
 const backdropVariants = {
   hidden: { opacity: 0 },
@@ -51,10 +50,29 @@ const tagVariants = {
   },
 };
 
+const resolveCoverUrl = (rawPath) => {
+  if (!rawPath) return null;
+  if (rawPath.startsWith('http://') || rawPath.startsWith('https://')) {
+    return rawPath;
+  }
+
+  let cleanPath = rawPath.replace(/\\/g, '/');
+  if (!cleanPath.startsWith('/')) {
+    cleanPath = `/${cleanPath}`;
+  }
+
+  if (!cleanPath.startsWith('/uploads/')) {
+    cleanPath = cleanPath.startsWith('/covers/')
+      ? `/uploads${cleanPath}`
+      : `/uploads/covers${cleanPath}`;
+  }
+
+  return `${FILEBASE_URL}${cleanPath}`;
+};
+
 const BookDetailModal = ({ book, onClose, onDownload }) => {
   const [imgError, setImgError] = useState(false);
 
-  // Modal açıldığında kaydırmayı kilitle ve ESC tuşunu dinle
   useEffect(() => {
     if (!book) return;
     setImgError(false);
@@ -71,9 +89,10 @@ const BookDetailModal = ({ book, onClose, onDownload }) => {
     };
   }, [book, onClose]);
 
-  const coverUrl = book?.coverImage?.startsWith('http')
-    ? book.coverImage
-    : `${API_BASE_URL}${book?.coverImage}`;
+  const rawCover = book?.coverImage || book?.coverUrl || book?.cover_image || book?.cover;
+  const coverUrl = resolveCoverUrl(rawCover);
+
+  const isVerified = Boolean(book?.isVerified);
 
   return (
     <AnimatePresence>
@@ -119,7 +138,20 @@ const BookDetailModal = ({ book, onClose, onDownload }) => {
                   className="relative aspect-[3/4] w-28 sm:w-32 bg-[#FAF6F0] rounded-2xl border border-[#E3DFD8] flex items-center justify-center text-[#A06A42] shadow-md shrink-0 overflow-hidden"
                 >
                   <div className="absolute inset-0 bg-[#A06A42]/5 pointer-events-none" />
-                  {book.coverImage && !imgError ? (
+
+                  {/* Kapak Üzeri Onaylı Rozeti */}
+                  {isVerified && (
+                    <motion.div
+                      initial={{ scale: 0.8, opacity: 0 }}
+                      animate={{ scale: 1, opacity: 1 }}
+                      title="Onaylanmış İçerik"
+                      className="absolute top-2 right-2 bg-[#FAF8F5]/95 border border-[#2E7D32]/25 text-[#2E7D32] p-1 rounded-full shadow-xs z-20 flex items-center justify-center backdrop-blur-xs"
+                    >
+                      <Icon name="badge-check" size={14} strokeWidth={2.2} />
+                    </motion.div>
+                  )}
+
+                  {coverUrl && !imgError ? (
                     <img
                       src={coverUrl}
                       alt={book.title}
@@ -133,14 +165,27 @@ const BookDetailModal = ({ book, onClose, onDownload }) => {
 
                 {/* Metinsel Bilgiler */}
                 <div className="space-y-3 flex-1 min-w-0">
-                  <div className="space-y-1 pr-6 sm:pr-8">
+                  <div className="space-y-1.5 pr-6 sm:pr-8">
                     <h3 className="text-lg md:text-xl font-black text-[#121A13] leading-tight break-words">
                       {book.title}
                     </h3>
-                    <p className="text-xs sm:text-sm font-bold text-[#A06A42] flex items-center justify-center sm:justify-start gap-1">
-                      <Icon name="user" size={13} variant="primary" className="inline" />
-                      Yükleyen: {book.uploader?.username || 'Bilinmiyor'}
-                    </p>
+
+                    {/* Yükleyen Bilgisi ve Onaylı İkonu */}
+                    <div className="text-xs sm:text-sm font-bold text-[#A06A42] flex items-center justify-center sm:justify-start gap-1.5 flex-wrap">
+                      <Icon name="user" size={13} variant="primary" className="shrink-0" />
+                      <span className="truncate">
+                        Yükleyen: {book.uploader?.username || 'Bilinmiyor'}
+                      </span>
+                      {isVerified && (
+                        <span
+                          title="Onaylı İçerik / Kullanıcı"
+                          className="inline-flex items-center gap-1 bg-[#2E7D32]/10 border border-[#2E7D32]/25 text-[#2E7D32] text-[10px] font-extrabold px-2 py-0.5 rounded-full shrink-0"
+                        >
+                          <Icon name="badge-check" size={12} strokeWidth={2.2} />
+                          <span>Onaylı</span>
+                        </span>
+                      )}
+                    </div>
                   </div>
 
                   {/* Çoklu Kategoriler */}
@@ -183,23 +228,27 @@ const BookDetailModal = ({ book, onClose, onDownload }) => {
               {/* 3. Bilgi Rozetleri */}
               <motion.div
                 variants={sectionVariants}
-                className="grid grid-cols-2 gap-3 text-[11px] sm:text-xs bg-[#FAF6F0]/30 p-3 rounded-2xl border border-[#DCD5CB]/50 shrink-0"
+                className="flex justify-between text-[11px] sm:text-xs bg-[#FAF6F0]/30 p-3 rounded-2xl border border-[#DCD5CB]/50 shrink-0"
               >
-                <div className="flex items-center gap-2 text-[#2B3B2E] font-semibold">
+                <div className="flex items-center gap-2 text-[#2B3B2E]  font-semibold">
                   <Icon name="calendar" size={13} variant="primary" className="shrink-0" />
                   <span>
-                    Eklenme:{' '}
+                    Eklenme:
                     <strong className="text-[#121A13]">
                       {new Date(book.createdAt).toLocaleDateString('tr-TR')}
                     </strong>
                   </span>
                 </div>
-                <div className="flex items-center gap-2 text-[#2B3B2E] font-semibold">
-                  <Icon name="bookOpen" size={13} variant="primary" className="shrink-0" />
+                <div className="flex ml-3 items-center gap-1.5 text-[#2B3B2E] font-semibold col-span-2 sm:col-span-1">
+                  <Icon
+                    name="badge-check"
+                    size={14}
+                    className={`shrink-0 ${isVerified ? 'text-[#2E7D32]' : 'text-[#A06A42]/60'}`}
+                  />
                   <span>
-                    Durum:{' '}
-                    <strong className="text-[#121A13]">
-                      {book.isActive ? 'Aktif' : 'Pasif'}
+                    Onay:
+                    <strong className={isVerified ? 'text-[#2E7D32]' : 'text-[#121A13]'}>
+                      {isVerified ? 'Onaylandı' : 'Bekliyor'}
                     </strong>
                   </span>
                 </div>

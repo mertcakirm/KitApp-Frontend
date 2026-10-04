@@ -1,7 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import Icon from './Icon';
-// Kendi API dosyanızın yoluna göre güncelleyin (örn: AuthApi veya AdminApi)
 import { AuthApi } from '../../api/authApi';
 
 const ChangePasswordModal = ({ isOpen, onClose }) => {
@@ -12,7 +11,6 @@ const ChangePasswordModal = ({ isOpen, onClose }) => {
   const [error, setError] = useState("");
   const [success, setSuccess] = useState(false);
 
-  // Popup her açıldığında veya kapandığında alanları sıfırla
   useEffect(() => {
     if (!isOpen) {
       setOldPassword("");
@@ -70,7 +68,6 @@ const ChangePasswordModal = ({ isOpen, onClose }) => {
     }
   };
 
-  // Input içinde Enter tuşuna basılırsa işlemi tetikle
   const handleKeyDown = (e) => {
     if (e.key === 'Enter') {
       handlePasswordChange();
@@ -81,7 +78,6 @@ const ChangePasswordModal = ({ isOpen, onClose }) => {
     <AnimatePresence>
       {isOpen && (
         <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
-          {/* Karartılmış Arka Plan */}
           <motion.div
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
@@ -91,7 +87,6 @@ const ChangePasswordModal = ({ isOpen, onClose }) => {
             className="fixed inset-0 bg-[#2B3B2E]/40 backdrop-blur-xs"
           />
 
-          {/* Modal Kutusu */}
           <motion.div
             initial={{ opacity: 0, scale: 0.95, y: 12 }}
             animate={{ opacity: 1, scale: 1, y: 0 }}
@@ -125,7 +120,6 @@ const ChangePasswordModal = ({ isOpen, onClose }) => {
               </button>
             </div>
 
-            {/* İçerik Alanı (Form etiketi olmadan div ile) */}
             <div className="mt-5 space-y-4">
               <div className="space-y-1.5">
                 <label className="block text-[11px] font-black text-[#A06A42] uppercase tracking-wider">

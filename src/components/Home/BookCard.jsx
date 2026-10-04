@@ -1,11 +1,9 @@
 // src/components/Home/BookCard.jsx
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { motion } from 'framer-motion';
 import Icon from '../common/Icon';
+import { FILEBASE_URL } from '../../api/api';
 
-const API_BASE_URL = 'http://localhost:5000';
-
-// Kartın genel giriş ve hover varyantları
 const cardVariants = {
   hidden: { opacity: 0, y: 20, scale: 0.96 },
   visible: (index = 0) => ({
@@ -16,7 +14,7 @@ const cardVariants = {
       type: 'spring',
       stiffness: 260,
       damping: 24,
-      delay: index * 0.05, // Kartların sırayla (stagger) gelmesi için
+      delay: index * 0.05,
     },
   }),
   hover: {
@@ -25,7 +23,6 @@ const cardVariants = {
   },
 };
 
-// Kapak resmi yakınlaşma varyantı
 const imageVariants = {
   hidden: { scale: 1 },
   visible: { scale: 1 },
@@ -35,7 +32,6 @@ const imageVariants = {
   },
 };
 
-// Kapak üzerindeki mini indirme ikonu varyantı
 const floatingBadgeVariants = {
   hidden: { opacity: 0, scale: 0.6, y: 8 },
   visible: { opacity: 0, scale: 0.6, y: 8 },
@@ -47,7 +43,6 @@ const floatingBadgeVariants = {
   },
 };
 
-// Kapak üzerinden geçen parlama (shine) efekti varyantı
 const shineVariants = {
   hidden: { x: '-150%', skewX: -20 },
   visible: { x: '-150%', skewX: -20 },
@@ -58,12 +53,41 @@ const shineVariants = {
   },
 };
 
+// Kapak URL'sini güvenli şekilde oluşturan yardımcı fonksiyon
+const resolveCoverUrl = (rawPath) => {
+  if (!rawPath) return null;
+  if (rawPath.startsWith('http://') || rawPath.startsWith('https://')) {
+    return rawPath;
+  }
+
+  let cleanPath = rawPath.replace(/\\/g, '/');
+  if (!cleanPath.startsWith('/')) {
+    cleanPath = `/${cleanPath}`;
+  }
+
+  if (!cleanPath.startsWith('/uploads/')) {
+    cleanPath = cleanPath.startsWith('/covers/')
+      ? `/uploads${cleanPath}`
+      : `/uploads/covers${cleanPath}`;
+  }
+
+  return `${FILEBASE_URL}${cleanPath}`;
+};
+
 const BookCard = ({ book, index = 0, onDownload, onDetailClick }) => {
   const [imgError, setImgError] = useState(false);
 
-  const coverUrl = book.coverImage?.startsWith('http')
-    ? book.coverImage
-    : `${API_BASE_URL}${book.coverImage}`;
+  // Backend'den gelebilecek olası tüm isimlendirmeleri yakala
+  const rawCover = book?.coverImage || book?.coverUrl || book?.cover_image || book?.cover;
+  const coverUrl = resolveCoverUrl(rawCover);
+
+  // Kitap veya yükleyen kullanıcı onaylı mı kontrolü
+  const isVerified = Boolean(book?.isVerified || book?.is_verified || book?.uploader?.isVerified);
+
+  // Kitap verisi değişirse hata durumunu sıfırla
+  useEffect(() => {
+    setImgError(false);
+  }, [rawCover]);
 
   return (
     <motion.div
@@ -87,8 +111,8 @@ const BookCard = ({ book, index = 0, onDownload, onDetailClick }) => {
           className="absolute inset-0 w-1/2 h-full bg-gradient-to-r from-transparent via-white/35 to-transparent z-20 pointer-events-none"
         />
 
-        {/* ÇOKLU KATEGORİ BADGE ALANI */}
-        <div className="absolute top-2.5 left-2.5 flex flex-wrap gap-1 max-w-[85%] z-20">
+        {/* ÇOKLU KATEGORİ BADGE ALANI (Sol Üst) */}
+        <div className="absolute top-2.5 left-2.5 flex flex-wrap gap-1 max-w-[75%] z-20">
           {book.categories?.slice(0, 2).map((category, idx) => (
             <span
               key={category.id || idx}
@@ -99,14 +123,31 @@ const BookCard = ({ book, index = 0, onDownload, onDetailClick }) => {
           ))}
         </div>
 
+        {/* ONAYLI (VERIFIED) ROZETİ (Sağ Üst) */}
+        {isVerified && (
+          <motion.div
+            initial={{ scale: 0.8, opacity: 0 }}
+            animate={{ scale: 1, opacity: 1 }}
+            whileHover={{ scale: 1.15, rotate: 8 }}
+            title="Onaylanmış İçerik"
+            className="absolute top-2.5 right-2.5 bg-[#FAF8F5]/95 border border-[#2E7D32]/25 text-[#2E7D32] p-1 rounded-full shadow-xs z-20 flex items-center justify-center backdrop-blur-xs"
+          >
+            <Icon name="badge-check" size={14} strokeWidth={2.2} />
+          </motion.div>
+        )}
+
         {/* Kitap Kapak Resmi veya Varsayılan İkon */}
-        {book.coverImage && !imgError ? (
+        {coverUrl && !imgError ? (
           <motion.img
             variants={imageVariants}
             src={coverUrl}
             alt={book.title}
+            crossOrigin="anonymous"
             className="w-full h-full object-cover"
-            onError={() => setImgError(true)}
+            onError={() => {
+              console.error('Kapak resmi yüklenemedi. Denenen URL:', coverUrl);
+              setImgError(true);
+            }}
           />
         ) : (
           <motion.div
@@ -146,9 +187,16 @@ const BookCard = ({ book, index = 0, onDownload, onDetailClick }) => {
             {book.title}
           </h4>
 
-          <p className="text-[10px] sm:text-xs font-bold text-[#A06A42] truncate">
-            {book.uploader?.username || 'Yazar Belirtilmemiş'}
-          </p>
+          <div className="flex items-center justify-center gap-1 text-[10px] sm:text-xs font-bold text-[#A06A42]">
+            <span className="truncate">
+              {book.uploader?.username || 'Yazar Belirtilmemiş'}
+            </span>
+            {isVerified && (
+              <span title="Onaylı" className="inline-flex items-center text-[#2E7D32] shrink-0">
+                <Icon name="badge-check" size={15} strokeWidth={3} />
+              </span>
+            )}
+          </div>
         </div>
 
         {/* Aksiyon Butonları */}

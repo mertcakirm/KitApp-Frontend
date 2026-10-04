@@ -1,4 +1,3 @@
-// src/components/admin/CategoryManagement.jsx
 import React, { useState, useEffect, useCallback } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import Icon from '../common/Icon';
@@ -12,19 +11,14 @@ const CategoryManagement = () => {
   const [totalCount, setTotalCount] = useState(0);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
-
-  // Yeni Kategori Ekleme State'leri
   const [newCategoryName, setNewCategoryName] = useState("");
   const [createLoading, setCreateLoading] = useState(false);
   const [createError, setCreateError] = useState("");
   const [createSuccess, setCreateSuccess] = useState("");
-
-  // Silme Onay Popup'ı için State'ler
   const [categoryToDelete, setCategoryToDelete] = useState(null);
   const [deleteLoading, setDeleteLoading] = useState(false);
   const [deleteError, setDeleteError] = useState("");
 
-  // Kategorileri Getirme (CategoryApi.getAll -> { count, rows })
   const fetchCategories = useCallback(async () => {
     setLoading(true);
     setError("");
@@ -49,7 +43,6 @@ const CategoryManagement = () => {
     fetchCategories();
   }, [fetchCategories]);
 
-  // Yeni Kategori Oluşturma (CategoryApi.create)
   const handleCreateCategory = async () => {
     if (createLoading) return;
     setCreateError("");
@@ -88,7 +81,6 @@ const CategoryManagement = () => {
     }
   };
 
-  // Silme Popup Kontrolleri
   const openDeleteModal = (category) => {
     setDeleteError("");
     setCategoryToDelete(category);
@@ -100,7 +92,6 @@ const CategoryManagement = () => {
     setDeleteError("");
   };
 
-  // Kategori Silme (CategoryApi.delete)
   const handleConfirmDelete = async () => {
     if (!categoryToDelete) return;
 
@@ -123,7 +114,6 @@ const CategoryManagement = () => {
 
   return (
     <div className="w-full space-y-6">
-      {/* ÜST BAŞLIK VE YENİ KATEGORİ EKLEME ALANI */}
       <div className="bg-[#FFFDFB] p-6 rounded-2xl border border-[#EADFCF] shadow-xs space-y-4">
         <div className="flex flex-col md:flex-row md:items-end justify-between gap-4">
           <div className="space-y-1.5">
@@ -139,7 +129,6 @@ const CategoryManagement = () => {
             </p>
           </div>
 
-          {/* Yeni Kategori Ekleme Kutusu (Form etiketi olmadan div ile) */}
           <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-2.5 w-full md:w-auto">
             <input
               type="text"
@@ -172,7 +161,6 @@ const CategoryManagement = () => {
           </div>
         </div>
 
-        {/* Ekleme Hata veya Başarı Bildirimleri */}
         {createError && (
           <div className="p-3 rounded-xl bg-rose-50 border border-rose-200 text-rose-700 text-xs font-bold flex items-center gap-2">
             <Icon name="alert" size={14} />
@@ -188,7 +176,6 @@ const CategoryManagement = () => {
         )}
       </div>
 
-      {/* TABLO VE DURUM ALANI */}
       <AnimatePresence mode="wait">
         {loading && (
           <Loading key="category-loader" message="Kategoriler getiriliyor..." />
@@ -238,7 +225,6 @@ const CategoryManagement = () => {
                           key={cat.id} 
                           className="hover:bg-[#FAF6F0]/50 transition-colors duration-150 group"
                         >
-                          {/* Kategori İkonu ve Adı */}
                           <td className="py-3.5 px-5">
                             <div className="flex items-center gap-3">
                               <div className="w-8 h-8 rounded-xl bg-[#FAF6F0] border border-[#EADFCF] flex items-center justify-center text-[#A06A42] font-black text-xs uppercase shrink-0 group-hover:bg-[#A06A42] group-hover:text-[#FFFDFB] transition-colors">
@@ -250,7 +236,6 @@ const CategoryManagement = () => {
                             </div>
                           </td>
 
-                          {/* Aktiflik Durumu */}
                           <td className="py-3.5 px-4 text-center whitespace-nowrap">
                             {cat.isActive ? (
                               <span className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-[11px] font-bold bg-emerald-50 text-emerald-800 border border-emerald-200">
@@ -265,7 +250,6 @@ const CategoryManagement = () => {
                             )}
                           </td>
 
-                          {/* İşlemler (Sil Butonu) */}
                           <td className="py-3.5 px-5 text-right whitespace-nowrap">
                             <button
                               type="button"
@@ -295,7 +279,6 @@ const CategoryManagement = () => {
         )}
       </AnimatePresence>
 
-      {/* KATEGORİ SİLME ONAY / RED POPUP'I */}
       <ConfirmModal
         isOpen={Boolean(categoryToDelete)}
         onClose={closeDeleteModal}

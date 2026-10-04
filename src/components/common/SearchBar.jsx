@@ -255,58 +255,6 @@ const SearchBar = ({
           )}
         </AnimatePresence>
       </motion.div>
-
-      {/* HIZLI ÖNERİ / KATEGORİ ETİKETLERİ */}
-      <AnimatePresence initial={false}>
-        {showSuggestions && suggestions?.length > 0 && !inputValue && (
-          <motion.div
-            key="suggestions-list"
-            variants={suggestionsContainerVariants}
-            initial="hidden"
-            animate="visible"
-            exit="exit"
-            className="overflow-hidden"
-          >
-            <div className="flex flex-wrap items-center justify-center gap-2 py-1 text-xs">
-              {suggestionsLabel && (
-                <motion.span
-                  variants={suggestionPillVariants}
-                  className="inline-flex items-center gap-1 font-bold text-[#2B3B2E]"
-                >
-                  {suggestionsIcon && (
-                    <motion.span
-                      animate={{ rotate: [0, 15, -15, 0], scale: [1, 1.15, 1] }}
-                      transition={{ duration: 3, repeat: Infinity, ease: 'easeInOut' }}
-                    >
-                      <Icon name={suggestionsIcon} size={13} variant="primary" />
-                    </motion.span>
-                  )}
-                  {suggestionsLabel}
-                </motion.span>
-              )}
-
-              {suggestions.map((item, idx) => {
-                const label = typeof item === 'object' ? item.label : item;
-                const key = typeof item === 'object' ? item.value || idx : item;
-
-                return (
-                  <motion.button
-                    key={key}
-                    type="button"
-                    variants={suggestionPillVariants}
-                    whileHover={{ y: -2, scale: 1.05 }}
-                    whileTap={{ scale: 0.94 }}
-                    onClick={() => handleSuggestionSelect(item)}
-                    className="bg-[#A06A42]/5 hover:bg-[#A06A42] text-[#A06A42] hover:text-white border border-[#A06A42]/30 px-3.5 py-1.5 rounded-full font-bold cursor-pointer shadow-2xs hover:shadow-md transition-colors duration-200"
-                  >
-                    {label}
-                  </motion.button>
-                );
-              })}
-            </div>
-          </motion.div>
-        )}
-      </AnimatePresence>
     </motion.div>
   );
 };

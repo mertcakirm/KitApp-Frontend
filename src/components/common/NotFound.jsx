@@ -1,4 +1,3 @@
-// src/components/common/NotFound.jsx
 import React from 'react';
 import { motion } from 'framer-motion';
 import Icon from './Icon';

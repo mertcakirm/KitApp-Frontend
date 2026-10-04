@@ -8,8 +8,8 @@ import BookDetailModal from '../components/home/BookDetailModal';
 import { BookApi } from '../api/bookApi';
 import Loading from '../components/common/Loading';
 import NotFound from '../components/common/NotFound';
+import { FILEBASE_URL } from '../api/api';
 
-const API_BASE_URL = 'http://localhost:5000';
 const PAGE_LIMIT = 12;
 const POPULAR_CATEGORIES = ['Dünya Klasikleri', 'Tarih', 'Bilim Kurgu', 'Edebiyat'];
 
@@ -110,7 +110,7 @@ const Home = () => {
 
     const pdfUrl = book.filePath.startsWith('http')
       ? book.filePath
-      : `${API_BASE_URL}${book.filePath}`;
+      : `${FILEBASE_URL}${book.filePath}`;
 
     const link = document.createElement('a');
     link.href = pdfUrl;

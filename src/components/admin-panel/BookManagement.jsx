@@ -5,8 +5,7 @@ import Loading from '../common/Loading';
 import NotFound from '../common/NotFound';
 import ConfirmModal from '../common/ConfirmModal';
 import { AdminApi } from '../../api/adminApi';
-
-const API_BASE_URL = 'http://localhost:5000';
+import { FILEBASE_URL } from '../../api/api';
 const PAGE_LIMIT = 10;
 
 const BookManagement = () => {
@@ -67,7 +66,7 @@ const BookManagement = () => {
 
   const getFullUrl = (path) => {
     if (!path) return "";
-    return path.startsWith('http') ? path : `${API_BASE_URL}${path}`;
+    return path.startsWith('http') ? path : `${FILEBASE_URL}${path}`;
   };
 
   const handleDownload = (book) => {
@@ -177,7 +176,6 @@ const BookManagement = () => {
 
   return (
     <div className="w-full space-y-6">
-      {/* ÜST BAŞLIK VE ARAMA KUTUSU */}
       <div className="flex flex-col md:flex-row md:items-end justify-between gap-4 bg-[#FFFDFB] p-6 rounded-2xl border border-[#EADFCF] shadow-xs">
         <div className="space-y-1.5">
           <div className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-[#FAF6F0] border border-[#EADFCF] text-[#A06A42] text-[11px] font-black uppercase tracking-wider">
@@ -215,7 +213,6 @@ const BookManagement = () => {
         </div>
       </div>
 
-      {/* TABLO VE DURUM ALANI */}
       <AnimatePresence mode="wait">
         {loading && (
           <Loading key="book-list-loader" message="Kitap verileri getiriliyor..." />
@@ -275,7 +272,6 @@ const BookManagement = () => {
                           key={book.id} 
                           className="hover:bg-[#FAF6F0]/50 transition-colors duration-150 group"
                         >
-                          {/* Kapak Görseli, Başlık ve Açıklama */}
                           <td className="py-3.5 px-5 max-w-xs">
                             <div className="flex items-center gap-3.5">
                               <div className="w-10 h-14 rounded-lg bg-[#FAF6F0] border border-[#EADFCF] overflow-hidden shrink-0 flex items-center justify-center shadow-2xs">
@@ -303,7 +299,6 @@ const BookManagement = () => {
                             </div>
                           </td>
 
-                          {/* Kategoriler */}
                           <td className="py-3.5 px-4">
                             <div className="flex flex-wrap gap-1 max-w-[200px]">
                               {book.categories && book.categories.length > 0 ? (
@@ -323,7 +318,6 @@ const BookManagement = () => {
                             </div>
                           </td>
 
-                          {/* Yükleyen Kullanıcı */}
                           <td className="py-3.5 px-4 whitespace-nowrap">
                             {book.uploader ? (
                               <div className="inline-flex items-center gap-2 px-2.5 py-1 rounded-xl bg-[#FAF6F0] border border-[#EADFCF]">
@@ -339,7 +333,6 @@ const BookManagement = () => {
                             )}
                           </td>
 
-                          {/* Doğrulama (isVerified) ve Aktiflik Durumu */}
                           <td className="py-3.5 px-4 text-center whitespace-nowrap">
                             <div className="flex flex-col items-center gap-1">
                               {book.isVerified ? (
@@ -356,15 +349,12 @@ const BookManagement = () => {
                             </div>
                           </td>
 
-                          {/* Tarih */}
                           <td className="py-3.5 px-4 whitespace-nowrap text-xs font-semibold text-[#2B3B2E]/75">
                             {formatDate(book.createdAt)}
                           </td>
 
-                          {/* İşlemler: PDF İndir | Onayla / Onayı Kaldır | Sil */}
                           <td className="py-3.5 px-5 text-right whitespace-nowrap">
                             <div className="inline-flex items-center justify-end gap-1.5">
-                              {/* PDF İndirme Butonu */}
                               <button
                                 type="button"
                                 onClick={() => handleDownload(book)}
@@ -375,7 +365,6 @@ const BookManagement = () => {
                                 <span>PDF</span>
                               </button>
 
-                              {/* Doğrulama / Doğrulama Kaldırma Butonu */}
                               {book.isVerified ? (
                                 <button
                                   type="button"
@@ -396,7 +385,6 @@ const BookManagement = () => {
                                 </button>
                               )}
 
-                              {/* Silme Butonu */}
                               <button
                                 type="button"
                                 onClick={() => openActionModal('delete', book)}
@@ -414,7 +402,6 @@ const BookManagement = () => {
                   </table>
                 </div>
 
-                {/* SAYFALAMA (PAGINATION) */}
                 {pagination.totalPages > 1 && (
                   <div className="flex items-center justify-between px-5 py-3.5 bg-[#FAF6F0]/40 border-t border-[#EADFCF]">
                     <span className="text-[11px] font-bold text-[#2B3B2E]/60">

@@ -1,8 +1,12 @@
 import axios from 'axios';
 import { getCookie, removeCookie } from '../utils/cookie';
 
+export const BASE_URL = import.meta.env.VITE_API_URL || 'http://localhost:3000/api/';
+export const FILEBASE_URL = (import.meta.env.VITE_FILE_BASE_URL || 'http://localhost:3000').replace(/\/$/, '');
+
+
 const api = axios.create({
-  baseURL: import.meta.env.VITE_API_URL || 'http://localhost:3000/api', 
+  baseURL: BASE_URL || 'http://localhost:3000/api', 
   timeout: 10000,
   headers: {
     'Content-Type': 'application/json',

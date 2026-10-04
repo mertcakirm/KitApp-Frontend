@@ -26,6 +26,7 @@ import {
   ChevronLeft,
   Eye,
   Trash2,
+  BadgeCheck,
   Edit,
   Plus,
   Filter,
@@ -33,7 +34,8 @@ import {
   LogOut,
   Settings,
   Lock,
-  Mail
+  Mail,
+  LogIn
 } from 'lucide-react';
 
 export const ICON_MAP = {
@@ -62,6 +64,8 @@ export const ICON_MAP = {
   alert: AlertCircle,
   chevronRight: ChevronRight,
   chevronLeft: ChevronLeft,
+  login: LogIn,
+  'badge-check': BadgeCheck,
   eye: Eye,
   trash: Trash2,
   edit: Edit,
@@ -70,7 +74,7 @@ export const ICON_MAP = {
   menu: Menu,
   lock: Lock,
   mail: Mail,
-  logout: LogOut,
+  'log-out': LogOut,
   settings: Settings,
 };
 

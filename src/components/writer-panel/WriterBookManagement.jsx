@@ -1,11 +1,17 @@
 import React, { useState, useEffect } from 'react';
-import { createPortal } from 'react-dom';
 import Icon from '../common/Icon';
 import ConfirmModal from '../common/ConfirmModal';
 import CreateBookModal from './CreateBookModal';
+import UpdateBookModal from './UpdateBookModal';
 import { BookApi } from '../../api/bookApi';
+import { FILEBASE_URL } from '../../api/api';
 
-const API_BASE_URL = import.meta.env.VITE_API_URL || 'http://localhost:5000';
+const getFileUrl = (path) => {
+  if (!path) return '';
+  if (path.startsWith('http')) return path;
+  const cleanPath = path.replace(/\\/g, '/');
+  return `${FILEBASE_URL}${cleanPath.startsWith('/') ? '' : '/'}${cleanPath}`;
+};
 
 const WriterBookManagement = ({ userId }) => {
   const [books, setBooks] = useState([]);
@@ -20,13 +26,8 @@ const WriterBookManagement = ({ userId }) => {
   // Kitap Ekleme Modalı State'i
   const [isCreateModalOpen, setIsCreateModalOpen] = useState(false);
 
-  // Güncelleme Modalı State'leri
+  // Güncelleme Modalı State'i
   const [editingBook, setEditingBook] = useState(null);
-  const [editTitle, setEditTitle] = useState('');
-  const [editDescription, setEditDescription] = useState('');
-  const [editCoverFile, setEditCoverFile] = useState(null);
-  const [editCoverPreview, setEditCoverPreview] = useState('');
-  const [isUpdating, setIsUpdating] = useState(false);
 
   // Silme Modalı State'leri
   const [deletingBook, setDeletingBook] = useState(null);
@@ -61,13 +62,6 @@ const WriterBookManagement = ({ userId }) => {
     setSearch(searchInput);
   };
 
-  // Tam Dosya URL'si Oluşturucu (/uploads/... -> http://localhost:5000/uploads/...)
-  const getFileUrl = (path) => {
-    if (!path) return '';
-    if (path.startsWith('http')) return path;
-    return `${API_BASE_URL}${path}`;
-  };
-
   // PDF İndirme Fonksiyonu
   const handleDownloadPdf = async (book) => {
     if (!book?.filePath) return;
@@ -75,6 +69,7 @@ const WriterBookManagement = ({ userId }) => {
 
     try {
       const response = await fetch(fileUrl);
+      if (!response.ok) throw new Error('Dosya indirilemedi');
       const blob = await response.blob();
       const blobUrl = window.URL.createObjectURL(blob);
       const link = document.createElement('a');
@@ -89,63 +84,12 @@ const WriterBookManagement = ({ userId }) => {
     }
   };
 
-  // Güncelleme Modalını Aç
-  const openEditModal = (book) => {
-    setEditingBook(book);
-    setEditTitle(book.title || '');
-    setEditDescription(book.description || '');
-    setEditCoverFile(null);
-    setEditCoverPreview(getFileUrl(book.coverImage));
-  };
-
-  const closeEditModal = () => {
-    setEditingBook(null);
-    setEditTitle('');
-    setEditDescription('');
-    setEditCoverFile(null);
-    setEditCoverPreview('');
-  };
-
-  // Kapak Resmi Seçildiğinde Önizleme Oluştur
-  const handleCoverChange = (e) => {
-    const file = e.target.files?.[0];
-    if (file) {
-      setEditCoverFile(file);
-      setEditCoverPreview(URL.createObjectURL(file));
-    }
-  };
-
-  // Kitap Güncelleme İşlemi (FormData ile coverImage, title, description)
-  const handleUpdateBook = async (e) => {
-    e.preventDefault();
-    if (!editingBook) return;
-
-    try {
-      setIsUpdating(true);
-      const formData = new FormData();
-      formData.append('title', editTitle.trim());
-      formData.append('description', editDescription.trim());
-      if (editCoverFile) {
-        formData.append('coverImage', editCoverFile);
-      }
-
-      await BookApi.updateBook(editingBook.id, formData);
-
-      closeEditModal();
-      fetchWriterBooks();
-    } catch (error) {
-      console.error('Kitap güncellenirken hata oluştu:', error);
-    } finally {
-      setIsUpdating(false);
-    }
-  };
-
   // Kitap Silme İşlemi
   const handleDeleteBook = async () => {
     if (!deletingBook) return;
     try {
       setIsDeleting(true);
-      await BookApi.deleteBook(deletingBook.id);
+      await BookApi.delete(deletingBook.id);
       setDeletingBook(null);
 
       if (books.length === 1 && page > 1) {
@@ -339,7 +283,7 @@ const WriterBookManagement = ({ userId }) => {
 
                         <button
                           type="button"
-                          onClick={() => openEditModal(book)}
+                          onClick={() => setEditingBook(book)}
                           title="Düzenle"
                           className="flex items-center gap-1.5 px-3 py-2 rounded-xl bg-[#FAF6F0] hover:bg-[#A06A42] text-[#A06A42] hover:text-[#FFFDFB] border border-[#EADFCF] hover:border-[#A06A42] text-[11px] font-black uppercase tracking-wider transition-all cursor-pointer"
                         >
@@ -393,6 +337,7 @@ const WriterBookManagement = ({ userId }) => {
         )}
       </div>
 
+      {/* Kitap Ekleme Modalı */}
       <CreateBookModal
         isOpen={isCreateModalOpen}
         onClose={() => setIsCreateModalOpen(false)}
@@ -402,102 +347,15 @@ const WriterBookManagement = ({ userId }) => {
         }}
       />
 
-      {/* Güncelleme Modalı (Sadece coverImage, title ve description) */}
-      {editingBook &&
-        createPortal(
-          <div className="fixed inset-0 z-[9999] w-screen h-screen flex items-center justify-center bg-black/50 backdrop-blur-xs p-4">
-            <div className="bg-[#FFFDFB] border border-[#EADFCF] rounded-2xl max-w-lg w-full p-6 space-y-5 shadow-xl">
-              <div className="flex items-center justify-between border-b border-[#EADFCF] pb-3">
-                <h3 className="text-sm font-black uppercase tracking-wider text-[#2B3B2E]">
-                  Kitap Bilgilerini Güncelle
-                </h3>
-                <button
-                  type="button"
-                  onClick={closeEditModal}
-                  className="text-[#2B3B2E]/50 hover:text-[#2B3B2E] text-sm font-bold cursor-pointer"
-                >
-                  ✕
-                </button>
-              </div>
+      {/* Kitap Güncelleme Modalı */}
+      <UpdateBookModal
+        isOpen={Boolean(editingBook)}
+        book={editingBook}
+        onClose={() => setEditingBook(null)}
+        onSuccess={fetchWriterBooks}
+      />
 
-              <form onSubmit={handleUpdateBook} className="space-y-4">
-                {/* Kapak Görseli Güncelleme */}
-                <div className="space-y-1.5">
-                  <label className="block text-xs font-black uppercase tracking-wider text-[#2B3B2E]/80">
-                    Kapak Görseli
-                  </label>
-                  <div className="flex items-center gap-4">
-                    <div className="w-16 h-22 rounded-xl overflow-hidden border border-[#EADFCF] bg-[#FAF6F0] shrink-0 flex items-center justify-center">
-                      {editCoverPreview ? (
-                        <img
-                          src={editCoverPreview}
-                          alt="Kapak Önizleme"
-                          className="w-full h-full object-cover"
-                        />
-                      ) : (
-                        <Icon name="book" size={20} />
-                      )}
-                    </div>
-                    <input
-                      type="file"
-                      accept="image/*"
-                      onChange={handleCoverChange}
-                      className="block w-full text-xs text-[#2B3B2E]/70 file:mr-3 file:py-2 file:px-3.5 file:rounded-xl file:border file:border-[#EADFCF] file:text-xs file:font-black file:uppercase file:bg-[#FAF6F0] file:text-[#2B3B2E] hover:file:bg-[#A06A42] hover:file:text-[#FFFDFB] file:transition-all file:cursor-pointer"
-                    />
-                  </div>
-                </div>
-
-                {/* Kitap Başlığı */}
-                <div className="space-y-1.5">
-                  <label className="block text-xs font-black uppercase tracking-wider text-[#2B3B2E]/80">
-                    Kitap Başlığı
-                  </label>
-                  <input
-                    type="text"
-                    required
-                    value={editTitle}
-                    onChange={(e) => setEditTitle(e.target.value)}
-                    className="w-full px-3.5 py-2.5 text-xs bg-[#FAF6F0] border border-[#EADFCF] rounded-xl text-[#2B3B2E] focus:outline-none focus:border-[#A06A42]"
-                  />
-                </div>
-
-                {/* Kitap Açıklaması */}
-                <div className="space-y-1.5">
-                  <label className="block text-xs font-black uppercase tracking-wider text-[#2B3B2E]/80">
-                    Açıklama
-                  </label>
-                  <textarea
-                    rows={4}
-                    required
-                    value={editDescription}
-                    onChange={(e) => setEditDescription(e.target.value)}
-                    className="w-full px-3.5 py-2.5 text-xs bg-[#FAF6F0] border border-[#EADFCF] rounded-xl text-[#2B3B2E] focus:outline-none focus:border-[#A06A42] resize-none"
-                  />
-                </div>
-
-                <div className="flex items-center justify-end gap-2.5 pt-2 border-t border-[#EADFCF]">
-                  <button
-                    type="button"
-                    disabled={isUpdating}
-                    onClick={closeEditModal}
-                    className="px-4 py-2.5 rounded-xl border border-[#EADFCF] text-[#2B3B2E] hover:bg-[#FAF6F0] text-xs font-black uppercase tracking-wider transition-all cursor-pointer"
-                  >
-                    İptal
-                  </button>
-                  <button
-                    type="submit"
-                    disabled={isUpdating}
-                    className="px-5 py-2.5 rounded-xl bg-[#A06A42] hover:bg-[#A06A42]/90 text-[#FFFDFB] text-xs font-black uppercase tracking-wider transition-all cursor-pointer disabled:opacity-50"
-                  >
-                    {isUpdating ? 'Kaydediliyor...' : 'Kaydet'}
-                  </button>
-                </div>
-              </form>
-            </div>
-          </div>,
-          document.body
-        )}
-
+      {/* Kitap Silme Onay Modalı */}
       <ConfirmModal
         isOpen={Boolean(deletingBook)}
         onClose={() => setDeletingBook(null)}
