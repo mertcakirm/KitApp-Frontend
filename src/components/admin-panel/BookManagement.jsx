@@ -262,6 +262,7 @@ const BookManagement = () => {
                         <th className="py-4 px-4">Kategoriler</th>
                         <th className="py-4 px-4">Yükleyen</th>
                         <th className="py-4 px-4 text-center">Onay Durumu</th>
+                        <th className="py-4 px-4 text-center">Aktiflik Durumu</th>
                         <th className="py-4 px-4">Eklenme Tarihi</th>
                         <th className="py-4 px-5 text-right">İşlemler</th>
                       </tr>
@@ -344,6 +345,22 @@ const BookManagement = () => {
                                 <span className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-[11px] font-bold bg-amber-50 text-amber-800 border border-amber-200">
                                   <span className="w-1.5 h-1.5 rounded-full bg-amber-500" />
                                   Onay Bekliyor
+                                </span>
+                              )}
+                            </div>
+                          </td>
+
+                          <td className="py-3.5 px-4 text-center whitespace-nowrap">
+                            <div className="flex flex-col items-center gap-1">
+                              {book.isActive ? (
+                                <span className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-[11px] font-bold bg-emerald-50 text-emerald-800 border border-emerald-200">
+                                  <span className="w-1.5 h-1.5 rounded-full bg-emerald-600 animate-pulse" />
+                                  Aktif
+                                </span>
+                              ) : (
+                                <span className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-[11px] font-bold bg-amber-50 text-amber-800 border border-amber-200">
+                                  <span className="w-1.5 h-1.5 rounded-full bg-amber-500" />
+                                  Pasif
                                 </span>
                               )}
                             </div>

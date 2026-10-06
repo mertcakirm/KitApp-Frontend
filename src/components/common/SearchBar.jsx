@@ -1,7 +1,8 @@
 // src/components/common/SearchBar.jsx
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useMemo } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import Icon from './Icon';
+import { CategoryApi } from '../../api/CategoryApi';
 
 // Hızlı öneriler kapsayıcısı için sıralı (stagger) animasyon varyantı
 const suggestionsContainerVariants = {
@@ -80,6 +81,8 @@ const SearchBar = ({
   suggestionsIcon = 'sparkles',
   showSuggestions = true,
   showProgressBar = true,
+  categoryView = false, // true ise arama çubuğunun altında API'den çekilen hızlı kategoriler gösterilir
+  categoryLimit = 6, // kategori görünümünde en fazla kaç kategori gösterilecek
   size = 'lg', // 'sm' | 'md' | 'lg'
   containerClassName = 'w-full max-w-2xl px-2 sm:px-4 shrink-0 mb-12',
   inputClassName = '',
@@ -88,9 +91,52 @@ const SearchBar = ({
 }) => {
   const [inputValue, setInputValue] = useState(value || '');
   const [isFocused, setIsFocused] = useState(false);
+  const [categories, setCategories] = useState([]);
 
   const currentSize = SIZE_CONFIG[size] || SIZE_CONFIG.lg;
   const isWaiting = debounceTime > 0 && inputValue !== (value || '');
+
+  // categoryView açıksa kategorileri API'den çek
+  useEffect(() => {
+    if (!categoryView) return;
+
+    let cancelled = false;
+
+    const loadCategories = async () => {
+      try {
+        const data = await CategoryApi.getAll();
+        // API cevabı: { count, rows: [{ id, isActive, name }] }
+        const list = Array.isArray(data)
+          ? data
+          : data?.rows || data?.categories || data?.data || [];
+
+        if (!cancelled) {
+          setCategories(Array.isArray(list) ? list : []);
+        }
+      } catch (err) {
+        console.error('Kategoriler çekilirken hata oluştu:', err);
+        if (!cancelled) setCategories([]);
+      }
+    };
+
+    loadCategories();
+
+    return () => {
+      cancelled = true;
+    };
+  }, [categoryView]);
+
+  // Kategorilerin ilk birkaçını { label, value } formatına çevir
+  const quickCategories = useMemo(() => {
+    return categories
+      .filter((cat) => typeof cat === 'string' || cat?.isActive !== false)
+      .slice(0, categoryLimit)
+      .map((cat) => {
+        const name = typeof cat === 'string' ? cat : cat?.name || '';
+        return { label: name, value: name }; // id kullanılmıyor, sadece name
+      })
+      .filter((cat) => cat.label);
+  }, [categories, categoryLimit]);
 
   // Dışarıdan value değişirse input'u senkronize et
   useEffect(() => {
@@ -255,6 +301,48 @@ const SearchBar = ({
           )}
         </AnimatePresence>
       </motion.div>
+
+      {/* Hızlı Kategoriler (categoryView = true ise) */}
+      <AnimatePresence>
+        {categoryView && quickCategories.length > 0 && (
+          <motion.div
+            key="quick-categories"
+            variants={suggestionsContainerVariants}
+            initial="hidden"
+            animate="visible"
+            exit="exit"
+            className="flex flex-wrap items-center justify-center gap-2 overflow-hidden"
+          >
+            <span className="flex items-center mt-3 gap-1.5 text-[11px] font-black text-[#A06A42] uppercase tracking-wider mr-1">
+              <Icon name={suggestionsIcon} size={13} variant="primary" />
+              {suggestionsLabel}
+            </span>
+
+            {quickCategories.map((item) => {
+              const isActive = inputValue === item.value;
+
+              return (
+                <motion.button
+                  key={item.value}
+                  type="button"
+                  variants={suggestionPillVariants}
+                  whileHover={{ scale: 1.06, y: -2 }}
+                  whileTap={{ scale: 0.94 }}
+                  disabled={disabled}
+                  onClick={() => handleSuggestionSelect(item)}
+                  className={`px-3.5 mt-3 py-1.5 rounded-full text-xs font-bold border transition-colors cursor-pointer disabled:opacity-60 disabled:pointer-events-none ${
+                    isActive
+                      ? 'bg-[#A06A42] text-[#FFFDFB] border-[#A06A42]'
+                      : 'bg-[#FFFDFB] text-[#2B3B2E] border-[#EADFCF] hover:border-[#A06A42] hover:text-[#A06A42]'
+                  }`}
+                >
+                  {item.label}
+                </motion.button>
+              );
+            })}
+          </motion.div>
+        )}
+      </AnimatePresence>
     </motion.div>
   );
 };

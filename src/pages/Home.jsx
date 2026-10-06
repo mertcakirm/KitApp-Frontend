@@ -137,6 +137,7 @@ const Home = () => {
         placeholder="Kitap adı, yazar veya kategori ara..."
         debounceTime={2000}
         size="lg"
+        categoryView={true}
         showSuggestions={true}
         showProgressBar={true}
         suggestionsLabel="Popüler Kategoriler:"

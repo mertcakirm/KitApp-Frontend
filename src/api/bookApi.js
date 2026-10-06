@@ -45,16 +45,8 @@ export const BookApi = {
 
   /* { title, description, coverImage } */
   update: async (bookId, bookData) => {
-    const formData = new FormData();
 
-    if (bookData.title) formData.append('title', bookData.title);
-    if (bookData.description) formData.append('description', bookData.description);
-    
-    if (bookData.coverImage) {
-      formData.append('coverImage', bookData.coverImage);
-    }
-
-    const response = await api.put(`/books/update/${bookId}`, formData, {
+    const response = await api.put(`/books/update/${bookId}`, bookData, {
       headers: {
         'Content-Type': 'multipart/form-data',
       },

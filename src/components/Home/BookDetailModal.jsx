@@ -233,8 +233,8 @@ const BookDetailModal = ({ book, onClose, onDownload }) => {
                 <div className="flex items-center gap-2 text-[#2B3B2E]  font-semibold">
                   <Icon name="calendar" size={13} variant="primary" className="shrink-0" />
                   <span>
-                    Eklenme:
-                    <strong className="text-[#121A13]">
+                    Eklenme :
+                    <strong className="ml-1 text-[#121A13]">
                       {new Date(book.createdAt).toLocaleDateString('tr-TR')}
                     </strong>
                   </span>
@@ -246,8 +246,8 @@ const BookDetailModal = ({ book, onClose, onDownload }) => {
                     className={`shrink-0 ${isVerified ? 'text-[#2E7D32]' : 'text-[#A06A42]/60'}`}
                   />
                   <span>
-                    Onay:
-                    <strong className={isVerified ? 'text-[#2E7D32]' : 'text-[#121A13]'}>
+                    Onay :
+                    <strong className={isVerified ? 'text-[#2E7D32] ml-1' : 'ml-1 text-[#121A13]'}>
                       {isVerified ? 'Onaylandı' : 'Bekliyor'}
                     </strong>
                   </span>

@@ -77,7 +77,10 @@ const Login = () => {
     });
   };
 
-  const handleAuthAction = async () => {
+  const handleAuthAction = async (e) => {
+    e?.preventDefault();
+    if (loading) return; // Enter'a üst üste basılırsa çift istek gitmesin
+
     setError('');
     setLoading(true);
 
@@ -91,12 +94,8 @@ const Login = () => {
         if (data && data.token) {
           const cookieDays = rememberMe ? 30 : 7;
           
-          // 1. Token'ı cookie'ye kaydet
           setCookie('token', data.token, cookieDays);
 
-          // 2. Rol bilgisini (roleName) yakala ve cookie'ye kaydet
-          // Önce dönen datadan (örn: data.roleName veya data.user.roleName) kontrol et,
-          // yoksa JWT token'ın içini decode ederek roleName bilgisini al.
           const decodedToken = parseJwt(data.token);
           const roleName = data.roleName || data.user?.roleName || decodedToken?.roleName || '';
 
@@ -229,7 +228,7 @@ const Login = () => {
             )}
           </AnimatePresence>
 
-          <div className="space-y-3">
+          <form onSubmit={handleAuthAction} className="space-y-3">
             <AnimatePresence mode="popLayout">
               {!isLogin && (
                 <motion.div
@@ -284,11 +283,6 @@ const Login = () => {
                 <label className="text-[10px] font-semibold text-[#3C4A3E]/85 uppercase tracking-wider">
                   Şifre
                 </label>
-                {isLogin && (
-                  <a href="#forgot" className="text-[10px] text-[#3C4A3E]/75 hover:text-[#3C4A3E] hover:underline transition-colors font-semibold font-sans">
-                    Şifreyi Unuttum?
-                  </a>
-                )}
               </div>
               <div className="relative">
                 <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none text-[#3C4A3E]/45 z-10">
@@ -312,26 +306,11 @@ const Login = () => {
               </div>
             </motion.div>
 
-            {isLogin && (
-              <motion.div variants={itemVariants} className="flex items-center pt-0.5">
-                <input
-                  id="remember_me"
-                  type="checkbox"
-                  checked={rememberMe}
-                  onChange={(e) => setRememberMe(e.target.checked)}
-                  className="h-3.5 w-3.5 rounded border-[#E3DFD8] bg-[#FAF8F5] text-[#3C4A3E] focus:ring-offset-0 focus:ring-1 focus:ring-[#3C4A3E]/20 accent-[#3C4A3E] cursor-pointer"
-                />
-                <label htmlFor="remember_me" className="ml-2 text-[11px] font-medium text-[#3C4A3E]/75 cursor-pointer select-none">
-                  Beni Hatırla
-                </label>
-              </motion.div>
-            )}
-
+            
             <motion.div variants={itemVariants}>
               <motion.button
-                type="button"
+                type="submit"
                 disabled={loading}
-                onClick={handleAuthAction}
                 whileHover={{ scale: 1.01 }}
                 whileTap={{ scale: 0.98 }}
                 transition={{ type: 'spring', stiffness: 400, damping: 17 }}
@@ -347,7 +326,7 @@ const Login = () => {
                 )}
               </motion.button>
             </motion.div>
-          </div>
+          </form>
 
           <motion.div variants={itemVariants} className="text-center mt-5 border-t border-[#E3DFD8]/40 pt-4">
             <p className="text-[11px] text-[#3C4A3E]/70 font-medium">

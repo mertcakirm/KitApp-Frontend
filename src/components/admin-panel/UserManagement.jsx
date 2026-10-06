@@ -281,15 +281,19 @@ const UserManagement = () => {
                           </td>
 
                           <td className="py-3.5 px-5 text-right whitespace-nowrap">
-                            <button
-                              type="button"
-                              onClick={() => openDeleteModal(user)}
-                              className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-rose-50 hover:bg-rose-600 text-rose-700 hover:text-[#FFFDFB] border border-rose-200 hover:border-rose-600 text-xs font-bold transition-all duration-150 cursor-pointer"
-                              title="Kullanıcıyı Sil"
-                            >
-                              <Icon name="trash" size={14} />
-                              <span>Sil</span>
-                            </button>
+                            {user.isActive ? (
+                              <button
+                                type="button"
+                                onClick={() => openDeleteModal(user)}
+                                className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-rose-50 hover:bg-rose-600 text-rose-700 hover:text-[#FFFDFB] border border-rose-200 hover:border-rose-600 text-xs font-bold transition-all duration-150 cursor-pointer"
+                                title="Kullanıcıyı Sil"
+                              >
+                                <Icon name="trash" size={14} />
+                                <span>Pasif Yap</span>
+                              </button>
+                            ) : (
+                              <span className="text-[#2B3B2E]/30 text-xs font-bold">—</span>
+                            )}
                           </td>
                         </tr>
                       ))}
