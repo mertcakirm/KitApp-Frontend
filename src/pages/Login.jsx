@@ -1,7 +1,7 @@
 import { useState } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import Icon from '../components/common/Icon';
-import { AuthApi } from '../api/AuthApi';
+import { AuthApi } from '../api/authApi';
 import { setCookie } from '../utils/cookie';
 import logo from '../assets/logo.png';
 
