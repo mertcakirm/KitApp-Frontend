@@ -4,7 +4,7 @@ import { motion, AnimatePresence } from 'framer-motion';
 import Icon from '../components/common/Icon';
 import Loading from '../components/common/Loading';
 import NotFound from '../components/common/NotFound';
-import PageHeader from '../components/home/PageHeader';
+import PageHeader from '../components/Home/PageHeader';
 import SearchBar from '../components/common/SearchBar';
 import WriterCard from '../components/writers/WriterCard';
 import { UserApi } from '../api/userApi';
