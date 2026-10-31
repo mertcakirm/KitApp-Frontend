@@ -1,10 +1,10 @@
 import React, { useState, useEffect, useCallback } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import Icon from '../components/common/Icon';
-import PageHeader from '../components/home/PageHeader';
+import PageHeader from '../components/Home/PageHeader';
 import SearchBar from '../components/common/SearchBar';
-import BookCard from '../components/home/BookCard';
-import BookDetailModal from '../components/home/BookDetailModal';
+import BookCard from '../components/Home/BookCard';
+import BookDetailModal from '../components/Home/BookDetailModal';
 import { BookApi } from '../api/bookApi';
 import Loading from '../components/common/Loading';
 import NotFound from '../components/common/NotFound';
