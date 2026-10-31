@@ -2,7 +2,7 @@
 import React, { useState, useEffect, useMemo } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import Icon from './Icon';
-import { CategoryApi } from '../../api/CategoryApi';
+import { CategoryApi } from '../../api/categoryApi';
 
 // Hızlı öneriler kapsayıcısı için sıralı (stagger) animasyon varyantı
 const suggestionsContainerVariants = {
